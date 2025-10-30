@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DJ Panel — BEATRØX</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 0; }
+    header { background: #ff0000; color: #fff; padding: 15px; font-size: 1.5em; text-align: center; }
+    main { padding: 20px; max-width: 800px; margin: auto; }
+    .song { border: 1px solid #ccc; background: #fff; border-radius: 8px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    button { padding: 6px 10px; border: none; border-radius: 5px; cursor: pointer; }
+    .playedBtn { background: #ff4444; color: #fff; }
+    .deleteBtn { background: #333; color: #fff; }
+  </style>
+</head>
+<body>
+  <header>🎚️ Panel DJ — BEATRØX</header>
+  <main>
+    <div id="login">
+      <h3>Contraseña de DJ</h3>
+      <input type="password" id="djPass" placeholder="Contraseña">
+      <button id="loginBtn">Entrar</button>
+    </div>
+    <div id="panel" style="display:none;">
+      <h2>Lista de Canciones</h2>
+      <div id="songList"></div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHYo8LYSyOqgr6tBgo9RXODH0KRwZeowQ",
+      authDomain: "live-de-eso.firebaseapp.com",
+      projectId: "live-de-eso",
+      storageBucket: "live-de-eso.firebasestorage.app",
+      messagingSenderId: "250545251960",
+      appId: "1:250545251960:web:94ad354f2650d46d32af8d"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const loginDiv = document.getElementById("login");
+    const panelDiv = document.getElementById("panel");
+    const loginBtn = document.getElementById("loginBtn");
+    const djPass = document.getElementById("djPass");
+    const songList = document.getElementById("songList");
+
+    loginBtn.addEventListener("click", () => {
+      if (djPass.value === "djbeatrox2025") {
+        loginDiv.style.display = "none";
+        panelDiv.style.display = "block";
+      } else {
+        alert("Contraseña incorrecta");
+      }
+    });
+
+    const q = query(collection(db, "songs"), orderBy("timestamp", "desc"));
+    onSnapshot(q, snapshot => {
+      songList.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const s = docSnap.data();
+        const div = document.createElement("div");
+        div.className = "song";
+        div.innerHTML = `
+          <span>${s.title} ${s.requestedBy ? `— (${s.requestedBy})` : ""}</span>
+          <div>
+            <button class="playedBtn">${s.status === "played" ? "Desmarcar" : "Marcar Sonada"}</button>
+            <button class="deleteBtn">Borrar</button>
+          </div>
+        `;
+        const playedBtn = div.querySelector(".playedBtn");
+        const deleteBtn = div.querySelector(".deleteBtn");
+
+        playedBtn.addEventListener("click", async () => {
+          await updateDoc(doc(db, "songs", docSnap.id), {
+            status: s.status === "played" ? "pending" : "played"
+          });
+        });
+        deleteBtn.addEventListener("click", async () => {
+          await deleteDoc(doc(db, "songs", docSnap.id));
+        });
+        songList.appendChild(div);
+      });
+    });
+  </script>
+</body>
+</html>
