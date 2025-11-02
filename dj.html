@@ -1,35 +1,164 @@
+<!DOCTYPE html>
 <html lang="es">
-<head> 
-  <meta charset="UTF-8"> 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-  <title>DJ Panel — BEATRØX</title> 
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DJ Panel — BEATRØX</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 0; }
-    header { background: #ff0000; color: #fff; padding: 15px; font-size: 1.5em; text-align: center; }
-    main { padding: 20px; max-width: 800px; margin: auto; }
-    .song { border: 1px solid #ccc; background: #fff; border-radius: 8px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-    button { padding: 6px 10px; border: none; border-radius: 5px; cursor: pointer; }
-    .playedBtn { background: #ff4444; color: #fff; }
-    .deleteBtn { background: #333; color: #fff; }
-    #avgRating { font-size: 1.2em; font-weight: bold; color: #222; }
-  </style> 
-</head> 
-<body> 
-  <header>🎚️ Panel DJ — BEATRØX</header> 
-  <main> 
-    <div id="login"> 
-      <h3>Contraseña de DJ</h3> 
-      <input type="password" id="djPass" placeholder="Contraseña"> 
-      <button id="loginBtn">Entrar</button> 
-    </div> 
-    <div id="panel" style="display:none;"> 
-      <h2>Valoración del público</h2>
-      <p id="avgRating">Cargando...</p>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&display=swap');
 
-      <h2>Lista de Canciones</h2> 
-      <div id="songList"></div> 
-    </div> 
-  </main> 
+    :root {
+      --neon: #00fff7;
+      --bg: #020617;
+      --panel: rgba(0, 255, 255, 0.05);
+      --hover: rgba(0, 255, 255, 0.15);
+      --text: #dff;
+    }
+
+    body {
+      background: radial-gradient(circle at 20% 30%, var(--bg), #000);
+      color: var(--text);
+      font-family: 'Orbitron', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+      overflow-x: hidden;
+      padding-top: 40px;
+    }
+
+    header {
+      font-size: 2em;
+      color: var(--neon);
+      text-shadow: 0 0 20px var(--neon), 0 0 40px #0099ff;
+      animation: pulse 2.5s infinite;
+      margin-bottom: 25px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { text-shadow: 0 0 20px var(--neon), 0 0 40px #0099ff; }
+      50% { text-shadow: 0 0 35px var(--neon), 0 0 80px #00d0ff; }
+    }
+
+    input {
+      width: 85%;
+      max-width: 420px;
+      padding: 12px;
+      font-size: 16px;
+      border: 2px solid var(--neon);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--neon);
+      outline: none;
+      text-align: center;
+      box-shadow: 0 0 10px var(--neon);
+      transition: 0.3s;
+    }
+
+    input:focus {
+      box-shadow: 0 0 25px var(--neon);
+    }
+
+    #login, #panel {
+      width: 90%;
+      max-width: 600px;
+    }
+
+    #avgRating {
+      font-size: 1.2em;
+      color: var(--neon);
+      margin: 10px 0 25px;
+    }
+
+    .song {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      background: var(--panel);
+      border: 1px solid var(--neon);
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      width: 100%;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+      transition: 0.3s;
+      backdrop-filter: blur(8px);
+    }
+
+    .song:hover {
+      background: var(--hover);
+      transform: translateY(-2px);
+      box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button {
+      background: var(--neon);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 0 10px var(--neon);
+    }
+
+    button:hover {
+      background: #00baff;
+      box-shadow: 0 0 20px var(--neon);
+    }
+
+    .played {
+      text-decoration: line-through;
+      opacity: 0.6;
+      color: #00c4b4;
+    }
+
+    footer {
+      margin-top: auto;
+      font-size: 0.9em;
+      color: #00eaff88;
+      text-shadow: 0 0 10px #00eaff;
+      padding-bottom: 15px;
+    }
+
+    @media (max-width: 600px) {
+      header { font-size: 1.6em; }
+      button { font-size: 13px; padding: 6px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>🎚️ DJ Panel — BEATRØX</header>
+
+  <div id="login">
+    <h3>Contraseña de DJ</h3>
+    <input type="password" id="djPass" placeholder="Contraseña">
+    <br><br>
+    <button id="loginBtn">Entrar</button>
+  </div>
+
+  <div id="panel" style="display:none;">
+    <h2>⭐ Valoración del público</h2>
+    <p id="avgRating">Cargando...</p>
+
+    <h2>🎵 Lista de Canciones</h2>
+    <div id="songList"></div>
+  </div>
+
+  <footer>© 2025 DJ BEATRØX — Neon Edition</footer>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -43,6 +172,7 @@
       messagingSenderId: "250545251960",
       appId: "1:250545251960:web:94ad354f2650d46d32af8d"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
@@ -72,24 +202,39 @@
         const s = docSnap.data();
         const div = document.createElement("div");
         div.className = "song";
+        const titleText = `${s.title} ${s.requestedBy ? `— (${s.requestedBy})` : ""}`;
         div.innerHTML = `
-          <span>${s.title} ${s.requestedBy ? `— (${s.requestedBy})` : ""}</span>
-          <div>
-            <button class="playedBtn">${s.status === "played" ? "Desmarcar" : "Marcar Sonada"}</button>
-            <button class="deleteBtn">Borrar</button>
+          <span class="${s.status === "played" ? "played" : ""}">${titleText}</span>
+          <div class="buttons">
+            <button class="copyBtn">Copiar</button>
+            <button class="playedBtn">${s.status === "played" ? "Desmarcar" : "Marcar sonada"}</button>
+            <button class="deleteBtn">Eliminar</button>
           </div>
         `;
+
         const playedBtn = div.querySelector(".playedBtn");
         const deleteBtn = div.querySelector(".deleteBtn");
+        const copyBtn = div.querySelector(".copyBtn");
+        const titleSpan = div.querySelector("span");
 
+        // Copiar nombre de canción
+        copyBtn.addEventListener("click", () => {
+          navigator.clipboard.writeText(titleText);
+          alert(`Copiado: ${titleText}`);
+        });
+
+        // Marcar / desmarcar
         playedBtn.addEventListener("click", async () => {
           await updateDoc(doc(db, "songs", docSnap.id), {
             status: s.status === "played" ? "pending" : "played"
           });
         });
+
+        // Eliminar
         deleteBtn.addEventListener("click", async () => {
           await deleteDoc(doc(db, "songs", docSnap.id));
         });
+
         songList.appendChild(div);
       });
     });
@@ -102,7 +247,8 @@
       const promedio = count > 0 ? (total / count).toFixed(1) : "0.0";
       avgRating.textContent = `⭐ ${promedio} / 5 (${count} votos)`;
     }
-    setInterval(actualizarPromedio, 3000); // se actualiza cada 3 segundos
-  </script> 
+
+    setInterval(actualizarPromedio, 4000);
+  </script>
 </body>
 </html>
