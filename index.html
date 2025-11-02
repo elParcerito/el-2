@@ -1,9 +1,8 @@
-<!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DJ BEATRØX Requests</title>
+<head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>DJ BEATRØX Requests</title> 
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; }
     header { background: #ff0000; color: #fff; padding: 15px; font-size: 1.5em; text-align: center; }
@@ -14,21 +13,36 @@
     .song-item { border: 1px solid #ccc; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
     .played { background: #ffdddd; }
     .pending { background: #ddffdd; }
-  </style>
-</head>
-<body>
-  <header>🎧 DJ BEATRØX REQUESTS</header>
-  <main>
-    <h2>Busca una canción</h2>
-    <input type="text" id="searchInput" placeholder="Escribe el nombre de la canción..." size="40">
-    <button id="searchBtn">Buscar</button>
-    <div id="results"></div>
-    <h3>Canciones pedidas</h3>
-    <div id="songList"></div>
-  </main>
+
+    /* --- Estrellas --- */
+    .stars { text-align: center; margin: 30px 0; }
+    .star { font-size: 2em; color: #ccc; cursor: pointer; transition: 0.3s; }
+    .star:hover, .star.active { color: gold; transform: scale(1.2); }
+    #thanks { text-align: center; color: green; margin-top: 10px; display: none; }
+  </style> 
+</head> 
+<body> 
+  <header>🎧 DJ BEATRØX REQUESTS</header> 
+  <main> 
+    <h2>Busca una canción</h2> 
+    <input type="text" id="searchInput" placeholder="Escribe el nombre de la canción..." size="40"> 
+    <button id="searchBtn">Buscar</button> 
+    <div id="results"></div> 
+    <h3>Canciones pedidas</h3> 
+    <div id="songList"></div> 
+
+    <h3>⭐ Califica al DJ</h3>
+    <div class="stars" id="starContainer">
+      <span class="star" data-value="1">★</span>
+      <span class="star" data-value="2">★</span>
+      <span class="star" data-value="3">★</span>
+      <span class="star" data-value="4">★</span>
+      <span class="star" data-value="5">★</span>
+    </div>
+    <div id="thanks">¡Gracias por tu valoración!</div>
+  </main> 
 
   <script type="module">
-    // ======= FIREBASE CONFIG =======
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
@@ -51,6 +65,7 @@
     const resultsDiv = document.getElementById("results");
     const songList = document.getElementById("songList");
 
+    // ======= BÚSQUEDA DE CANCIONES =======
     searchBtn.addEventListener("click", async () => {
       const queryText = searchInput.value.trim();
       if (!queryText) return;
@@ -87,6 +102,24 @@
         songList.appendChild(div);
       });
     });
-  </script>
+
+    // ======= SISTEMA DE ESTRELLAS =======
+    const stars = document.querySelectorAll(".star");
+    const thanks = document.getElementById("thanks");
+
+    stars.forEach(star => {
+      star.addEventListener("click", async () => {
+        const value = parseInt(star.dataset.value);
+        stars.forEach(s => s.classList.remove("active"));
+        for (let i = 0; i < value; i++) stars[i].classList.add("active");
+        await addDoc(collection(db, "ratings"), {
+          value,
+          timestamp: new Date()
+        });
+        thanks.style.display = "block";
+        setTimeout(() => thanks.style.display = "none", 2000);
+      });
+    });
+  </script> 
 </body>
 </html>

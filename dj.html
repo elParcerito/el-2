@@ -1,9 +1,8 @@
-<!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DJ Panel — BEATRØX</title>
+<head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>DJ Panel — BEATRØX</title> 
   <style>
     body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 0; }
     header { background: #ff0000; color: #fff; padding: 15px; font-size: 1.5em; text-align: center; }
@@ -12,25 +11,29 @@
     button { padding: 6px 10px; border: none; border-radius: 5px; cursor: pointer; }
     .playedBtn { background: #ff4444; color: #fff; }
     .deleteBtn { background: #333; color: #fff; }
-  </style>
-</head>
-<body>
-  <header>🎚️ Panel DJ — BEATRØX</header>
-  <main>
-    <div id="login">
-      <h3>Contraseña de DJ</h3>
-      <input type="password" id="djPass" placeholder="Contraseña">
-      <button id="loginBtn">Entrar</button>
-    </div>
-    <div id="panel" style="display:none;">
-      <h2>Lista de Canciones</h2>
-      <div id="songList"></div>
-    </div>
-  </main>
+    #avgRating { font-size: 1.2em; font-weight: bold; color: #222; }
+  </style> 
+</head> 
+<body> 
+  <header>🎚️ Panel DJ — BEATRØX</header> 
+  <main> 
+    <div id="login"> 
+      <h3>Contraseña de DJ</h3> 
+      <input type="password" id="djPass" placeholder="Contraseña"> 
+      <button id="loginBtn">Entrar</button> 
+    </div> 
+    <div id="panel" style="display:none;"> 
+      <h2>Valoración del público</h2>
+      <p id="avgRating">Cargando...</p>
+
+      <h2>Lista de Canciones</h2> 
+      <div id="songList"></div> 
+    </div> 
+  </main> 
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getFirestore, collection, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, collection, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCHYo8LYSyOqgr6tBgo9RXODH0KRwZeowQ",
@@ -48,16 +51,20 @@
     const loginBtn = document.getElementById("loginBtn");
     const djPass = document.getElementById("djPass");
     const songList = document.getElementById("songList");
+    const avgRating = document.getElementById("avgRating");
 
+    // ======= LOGIN =======
     loginBtn.addEventListener("click", () => {
       if (djPass.value === "djbeatrox2025") {
         loginDiv.style.display = "none";
         panelDiv.style.display = "block";
+        actualizarPromedio();
       } else {
         alert("Contraseña incorrecta");
       }
     });
 
+    // ======= CANCIONES EN TIEMPO REAL =======
     const q = query(collection(db, "songs"), orderBy("timestamp", "desc"));
     onSnapshot(q, snapshot => {
       songList.innerHTML = "";
@@ -86,6 +93,16 @@
         songList.appendChild(div);
       });
     });
-  </script>
+
+    // ======= PROMEDIO DE ESTRELLAS =======
+    async function actualizarPromedio() {
+      const snapshot = await getDocs(collection(db, "ratings"));
+      let total = 0, count = 0;
+      snapshot.forEach(doc => { total += doc.data().value; count++; });
+      const promedio = count > 0 ? (total / count).toFixed(1) : "0.0";
+      avgRating.textContent = `⭐ ${promedio} / 5 (${count} votos)`;
+    }
+    setInterval(actualizarPromedio, 3000); // se actualiza cada 3 segundos
+  </script> 
 </body>
 </html>
